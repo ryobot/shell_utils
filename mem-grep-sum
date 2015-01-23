@@ -1,0 +1,41 @@
+#!/bin/sh
+
+all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep $1`
+if [ $# -eq 2 ] ; then
+  if [ "$2" = "-v" ] ; then
+    echo "PID RSS COMMAND"
+    echo "$all_result"
+    echo "SUM ----- "
+  fi
+fi
+pids=`echo "$all_result" | cut -d" " -f1`
+
+sum=0
+for pid in $pids
+do
+  # echo "pid - $pid"
+  item=`proc-mem-used $pid`
+  sum=`expr $sum + $item`
+done
+if [ $# -eq 2 ] ; then
+  if [ "$2" = "-v" ] ; then
+    rss_sum=0
+    for pid in $pids
+    do
+      item=`proc-mem-used $pid -r`
+      rss_sum=`expr $rss_sum + $item`
+    done
+    echo "RSS  : $rss_sum"
+    swp_sum=0
+    for pid in $pids
+    do
+      item=`proc-mem-used $pid -s`
+      swp_sum=`expr $spw_sum + $item`
+    done
+    echo "SWAP : $swp_sum"
+    echo -n "TOTAL: "
+  fi
+fi
+echo $sum
+
+exit 0

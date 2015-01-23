@@ -1,0 +1,24 @@
+#!/bin/sh
+new_in=`iptables -L INPUT -vx | grep INPUT | cut -d" " -f7`
+new_out=`iptables -L OUTPUT -vx | grep OUTPUT | cut -d" " -f7`
+echo $new_in > prev_in
+echo $new_out > prev_out
+sleep 5
+
+while :
+do
+  prev_in=`cat prev_in`
+  prev_out=`cat prev_out`
+  new_in=`iptables -L INPUT -vx | grep INPUT | cut -d" " -f7`
+  new_out=`iptables -L OUTPUT -vx | grep OUTPUT | cut -d" " -f7`
+  trf_in=`expr $new_in - $prev_in`
+  rate_in=`expr $trf_in`
+  trf_out=`expr $new_out - $prev_out`
+  rate_out=`expr $trf_out`
+  #echo "trf  : $trf"
+  echo -e "input : $rate_in B/sec.\toutput: $rate_out B/sec.     \c"
+  echo $new_in > prev_in
+  echo $new_out > prev_out
+  sleep 5
+  echo -e "\r\c"
+done

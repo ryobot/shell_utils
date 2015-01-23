@@ -1,0 +1,25 @@
+#!/bin/sh
+
+rss=`grep VmRSS /proc/$1/status | tr -s " " | cut -d" " -f2`
+swapped=`grep VmSwap /proc/$1/status | tr -s " " | cut -d" " -f2`
+used=`expr $rss + $swapped`
+
+if [ $# -eq 2 ] ; then
+  if [ "$2" = "-v" ] ; then
+    echo "RSS: $rss"
+    echo "Swap: $swapped"
+    echo -n "Used: "
+  fi
+  if [ "$2" = "-r" ] ; then
+    echo $rss
+    exit 0
+  fi
+  if [ "$2" = "-s" ] ; then
+    echo $swapped
+    exit 0
+  fi
+fi
+
+echo $used
+
+exit 0

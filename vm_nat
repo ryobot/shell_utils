@@ -1,0 +1,59 @@
+#!/bin/sh
+
+while getopts ":v:b:AD" opt
+do
+    case ${opt} in
+    v ) PRIVATE=${OPTARG} ;;
+    b ) PUBLIC=${OPTARG} ;;
+    A ) MODE=ADD ;;
+    D ) MODE=DELETE ;;
+    esac
+done
+
+if [ -z $PRIVATE ] || [ -z $PUBLIC ] || [ -z $MODE ] ; then
+    echo "options: [-A|-D] -v [private IP] -b [public IP]"
+    exit 1
+fi
+
+if [ $MODE == "ADD" ] ; then
+
+  echo -n "checking public IP : $PUBLIC"
+  ping $PUBLIC -c 1 > /dev/null
+  if [ $? -ne 1 ] ; then
+    echo "...public IP in use. exit"
+    exit 1
+  fi
+  echo "...OK"
+
+  echo -n "checking private IP : $PRIVATE"
+  ping $PRIVATE -c 1 > /dev/null
+  if [ $? -ne 0 ] ; then
+    echo "...private IP not in use. exit"
+    exit 1
+  fi
+  echo "...OK"
+
+  echo "setting SNAT/DNAT"
+  iptables -t nat -A PREROUTING -d $PUBLIC/32 -j DNAT --to-destination $PRIVATE
+  iptables -t nat -A POSTROUTING -s $PRIVATE/32 -j SNAT --to-source $PUBLIC
+  iptables -t nat -A OUTPUT -d $PUBLIC/32 -j DNAT --to-destination $PRIVATE
+  iptables -L -t nat | grep $PUBLIC
+
+  echo "setting IP alias"
+  ip address add $PUBLIC dev eth0
+  ip address show | grep $PUBLIC
+
+else
+
+  echo "deleting SNAT/DNAT"
+  iptables -t nat -D PREROUTING -d $PUBLIC/32 -j DNAT --to-destination $PRIVATE
+  iptables -t nat -D POSTROUTING -s $PRIVATE/32 -j SNAT --to-source $PUBLIC
+  iptables -t nat -D OUTPUT -d $PUBLIC/32 -j DNAT --to-destination $PRIVATE
+  iptables -L -t nat | grep $PUBLIC
+
+  echo "deleting IP alias"
+  ip address del $PUBLIC/32 dev eth0
+  ip address show | grep $PUBLIC
+
+fi
+exit 0
