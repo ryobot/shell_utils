@@ -1,0 +1,11 @@
+#!/bin/sh
+
+vms=`virsh list | tail -n+3 | awk '{ print $2 }'`
+
+for line in `echo "${vms}"` ; do
+  mac_addr=`grep "mac address" /var/run/libvirt/qemu/${line}.xml | cut -d"'" -f2`
+  ip_addr=`grep $mac_addr /var/log/messages | tail -1`
+  echo $line -- $ip_addr
+done
+
+exit 0
