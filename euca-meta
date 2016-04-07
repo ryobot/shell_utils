@@ -1,0 +1,32 @@
+#!/bin/sh
+if [ $1 == "id" ] ; then
+  curl -s http://169.254.169.254/latest/meta-data/instance-id
+  echo ""
+  exit 0
+fi
+if [ $1 == "private" ] ; then
+  curl -s http://169.254.169.254/latest/meta-data/local-ipv4
+  echo ""
+  exit 0
+fi
+if [ $1 == "public" ] ; then
+  curl -s http://169.254.169.254/latest/meta-data/public-ipv4
+  echo ""
+  exit 0
+fi
+if [ $1 == "image" ] ; then
+  curl -s http://169.254.169.254/latest/meta-data/ami-id
+  echo ""
+  exit 0
+fi
+if [ $1 == "userdata" ] ; then
+  USERDATA=`curl -s http://169.254.169.254/latest/user-data`
+  chk=`echo $USERDATA | grep "404 - Not Found"`
+  if [ $? -eq 0 ] ; then
+     exit 0
+  fi
+  echo "$USERDATA"
+  exit 0
+fi
+echo "usage: euca-meta [id|private|public|image|userdata]"
+exit 1

@@ -1,0 +1,46 @@
+#!/bin/sh
+
+CONFFILE=/etc/zabbix/zabbix_agentd.conf
+INSTANCE_ID=`euca-meta id`
+# PUBLIC_IP=`euca-meta public`
+ZABBIX_SERVER_IP=10.36.238.99
+USER_PARAMETER1="UserParameter=euca.metadata[*],curl -s http://169.254.169.254/latest/meta-data/\$1/"
+USER_PARAMETER1_NAME="euca.metadata"
+
+echo "Editing $CONFFILE Server:${ZABBIX_SERVER_IP} Hostname:${INSTANCE_ID}"
+sed "/^Server=/c\Server=${ZABBIX_SERVER_IP}" $CONFFILE -i
+sed "/^ServerActive=/c\ServerActive=${ZABBIX_SERVER_IP}" $CONFFILE -i
+sed "/^Hostname=/c\Hostname=${INSTANCE_ID}" $CONFFILE -i
+# sed "/^ListenIP=/c\ListenIP=${PUBLIC_IP}" $CONFFILE -i
+chk=`grep $USER_PARAMETER1_NAME $CONFFILE`
+if [ "$chk" == "" ] ; then
+  echo "Adding UserParameter:$USER_PARAMETER1_NAME"
+  sudo sed -i -e "/^# UserParameter=$/a $USER_PARAMETER1" $CONFFILE
+fi
+
+chk=`cat /etc/redhat-release | grep "release 7."`
+if [ "$chk" != "" ] ; then
+  # CentOS 7
+  systemctl status zabbix-agent
+  ret=$?
+  if [ $ret -eq 3 ] ; then
+    systemctl start zabbix-agent
+  elif [ $ret -eq 0 ] ; then
+    systemctl restart zabbix-agent
+  else
+    echo "Cannot start/restart zabbix-agent"
+  fi
+else
+  # CentOS 6
+  service zabbix-agent status
+  ret=$?
+  if [ $ret -eq 3 ] ; then
+    service zabbix-agent start
+  elif [ $ret -eq 0 ] ; then
+    service zabbix-agent restart
+  else
+    echo "Cannot start/restart zabbix-agent"
+  fi
+fi
+
+exit 0
