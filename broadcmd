@@ -1,0 +1,24 @@
+#!/bin/sh
+
+CMD=$1
+. ./brdhosts
+
+if [ "$2" == "-p" ] ; then
+  echo -e "\n\e[32m$SMTPGW: $CMD\e[m\n"
+  ssh $SMTPGW $CMD
+  echo -e "\n\e[32m$TGN: $CMD\e[m\n"
+  ssh $TGN $CMD
+  echo -e "\n\e[32m$MAIL1: $CMD\e[m\n"
+  ssh $MAIL1 $CMD
+  echo -e "\n\e[32m$MAIL2: $CMD\e[m\n"
+  ssh $MAIL2 $CMD
+  echo -e "\n\e[32m$MAIL3: $CMD\e[m\n"
+  ssh $MAIL3 $CMD
+else
+  ssh $SMTPGW $CMD
+  ssh $TGN $CMD
+  ssh $MAIL1 $CMD
+  ssh $MAIL2 $CMD
+  ssh $MAIL3 $CMD
+fi
+exit 0

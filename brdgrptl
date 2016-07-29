@@ -1,0 +1,32 @@
+#!/bin/sh
+
+FILE=$1
+LAST_KEY=$2
+. ./brdhosts
+
+echo -e "\n\e[32m$SMTPGW: $CMD\e[m"
+N=`ssh $SMTPGW grep -n $LAST_KEY $FILE | tail -1 | cut -d':' -f1`
+N=`expr $N + 1`
+ssh $SMTPGW tail -n +$N $FILE
+
+echo -e "\n\e[32m$TGN: $CMD\e[m"
+N=`ssh $TGN grep -n $LAST_KEY $FILE | tail -1 | cut -d':' -f1`
+N=`expr $N + 1`
+ssh $TGN tail -n +$N $FILE
+
+echo -e "\n\e[32m$MAIL1: $CMD\e[m"
+N=`ssh $MAIL1 grep -n $LAST_KEY $FILE | tail -1 | cut -d':' -f1`
+N=`expr $N + 1`
+ssh $MAIL1 tail -n +$N $FILE
+
+echo -e "\n\e[32m$MAIL2: $CMD\e[m"
+N=`ssh $MAIL2 grep -n $LAST_KEY $FILE | tail -1 | cut -d':' -f1`
+N=`expr $N + 1`
+ssh $MAIL2 tail -n +$N $FILE
+
+echo -e "\n\e[32m$MAIL3: $CMD\e[m"
+N=`ssh $MAIL3 grep -n $LAST_KEY $FILE | tail -1 | cut -d':' -f1`
+N=`expr $N + 1`
+ssh $MAIL3 tail -n +$N $FILE
+
+exit 0
