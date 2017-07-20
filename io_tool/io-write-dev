@@ -1,0 +1,4 @@
+#!/bin/sh
+
+grep $1 /proc/diskstats | head -1 | tr -s " " | cut -d" " -f11
+exit $?

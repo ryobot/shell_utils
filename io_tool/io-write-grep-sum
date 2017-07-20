@@ -1,0 +1,15 @@
+#!/bin/sh
+
+all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep $1`
+pids=`echo "$all_result" | cut -d" " -f1`
+
+sum=0
+for pid in $pids
+do
+  # echo "pid - $pid"
+  write=`grep write_bytes /proc/$pid/io | head -1 | tr -s " " | cut -d" " -f2`
+  sum=`expr $sum + $write`
+done
+echo $sum
+
+exit 0
