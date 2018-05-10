@@ -1,6 +1,11 @@
 #!/bin/sh
 
-all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep $1`
+if [ "$1" == "all" ] ; then
+  all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep -v RSS`
+else
+  all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep $1`
+fi
+
 if [ $# -eq 2 ] ; then
   if [ "$2" = "-v" ] ; then
     echo "PID RSS COMMAND"
