@@ -1,0 +1,20 @@
+#!/bin/sh
+
+all_result=`ps alx | tr -s " " | cut -d" " -f3,8,13 | egrep $1`
+if [ $# -eq 2 ] ; then
+  if [ "$2" = "-v" ] ; then
+    echo "PID RSS COMMAND"
+    echo "$all_result"
+    echo "SUM ----- "
+  fi
+fi
+rsss=`echo "$all_result" | cut -d" " -f2`
+
+sum=0
+for rss in $rsss
+do
+  sum=`expr $sum + $rss`
+done
+echo $sum
+
+exit 0
